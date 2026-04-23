@@ -1,0 +1,5 @@
+# Ignore personal notes and temporary files
+
+*.txt
+*.log
+hint.*
