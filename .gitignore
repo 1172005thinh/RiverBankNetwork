@@ -1,0 +1,7 @@
+# Ignore my personal notes and temporary files
+
+AGENTS.md
+*.txt
+*.log
+.agent/
+.github/
