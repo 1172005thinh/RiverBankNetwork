@@ -51,8 +51,8 @@ graph TD
     HNACC -.-> HNPC[18x PCs, 6x Cameras]
     HNACC -.-> HNAP[4x Autonomous APs\n27 Staff, 27 Guest]
     
-    classDef hq fill:#cce5ff,stroke:#004085,stroke-width:2px;
-    classDef branch fill:#d4edda,stroke:#155724,stroke-width:2px;
+    classDef hq fill:#004085,stroke:#001A33,stroke-width:2px,color:#ffffff;
+    classDef branch fill:#155724,stroke:#0B2E13,stroke-width:2px,color:#ffffff;
     class HQR1,HQR2,FW1,FW2,HQCORE1,HQCORE2,HQACC,HQDMZ,HQWLC hq;
     class DNR1,DNCORE,DNACC,HNR1,HNCORE,HNACC branch;
 ```
