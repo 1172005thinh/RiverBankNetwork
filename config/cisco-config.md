@@ -770,3 +770,109 @@ These configurations cannot be done via the Cisco IOS CLI. You must manually con
 - **DNS & Web Check:** Open a Web Browser from a Staff PC in Packet Tracer and navigate to `www.riverbank.com`. It should load the Bank Portal.
 - **NAT / Port Forwarding Check:** Open a Web Browser on a PC connected to the *outside* ISP router and navigate to 203.0.113.2. It should trigger your NAT rules and load the internal Bank Portal.
 - **Security Check (ACL):** From a device on the Guest WiFi, attempt to Ping a Staff PC or the Web Server (10.0.20.5). Packet Tracer should say Destination host unreachable confirming the Guest isolation ACL is working perfectly.
+
+---
+
+## 10. ENTERPRISE SCALING & HIGH AVAILABILITY (Equipment Inventory Match)
+
+To fully comply with the `equipment-inventory.md` requirements, the following advanced configurations should be added to expand the logical base into a full enterprise-scale topology.
+
+### 10.1 High Availability HQ Router (HQ-R2) with HSRP
+
+To provide gateway redundancy, add a second Cisco 4331 Router (`HQ-R2`). Both HQ-R1 and HQ-R2 will share the `10.0.X.1` default gateway IP using HSRP.
+
+*(Note: In a true HA setup, HQ-R1 physical IPs change to `.2`, HQ-R2 uses `.3`, and the HSRP virtual IP is `.1`. Apply this concept across all sub-interfaces.)*
+
+```text
+enable
+configure terminal
+hostname HQ-R2
+
+! --- Sub-Interfaces with HSRP (Example for VLAN 10 & 20) ---
+interface GigabitEthernet0/0/1.10
+ encapsulation dot1Q 10
+ ip address 10.0.10.3 255.255.255.0
+ standby 10 ip 10.0.10.1
+ standby 10 priority 90
+ standby 10 preempt
+exit
+
+interface GigabitEthernet0/0/1.20
+ encapsulation dot1Q 20
+ ip address 10.0.20.3 255.255.255.0
+ standby 20 ip 10.0.20.1
+ standby 20 priority 90
+ standby 20 preempt
+exit
+
+! ... (Repeat HSRP for all other VLANs) ...
+
+end
+write memory
+```
+
+*(You must also update HQ-R1 to have physical IP `10.0.x.2` and `standby 10 priority 110` so it remains the active router).*
+
+### 10.2 Cisco ASA Perimeter Firewall (HQ-FW1)
+
+Place the ASA between the ISP and the Core Routers.
+
+```text
+enable
+configure terminal
+hostname HQ-FW1
+
+interface GigabitEthernet1/1
+ nameif outside
+ security-level 0
+ ip address 203.0.113.2 255.255.255.252
+ no shutdown
+exit
+
+interface GigabitEthernet1/2
+ nameif inside
+ security-level 100
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+exit
+
+! Route traffic inside to HQ-R1/R2 and outside to ISP
+route outside 0.0.0.0 0.0.0.0 203.0.113.1 1
+route inside 10.0.0.0 255.0.0.0 192.168.1.2 1
+```
+
+### 10.3 Core vs Access Layer Switching (HQ-ACC1)
+
+Deploy a dedicated Access Switch (`HQ-ACC1`) to offload end-user ports from the Core Switch (`HQ-SW1`).
+
+```text
+enable
+configure terminal
+hostname HQ-ACC1
+
+! Uplink to Core Switch
+interface GigabitEthernet0/1
+ switchport mode trunk
+ no shutdown
+exit
+
+! Access Ports for PCs and APs
+interface range FastEthernet0/1 - 10
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+exit
+
+end
+write memory
+```
+
+### 10.4 Wireless LAN Controller (WLC)
+
+Instead of autonomous APs, use a **WLC-3504** and **LAP-PT** (Lightweight Access Points) in Packet Tracer.
+
+1. Connect WLC to `HQ-SW1` on a trunk port or management VLAN 99.
+2. Go to WLC GUI via Web Browser.
+3. Configure Dynamic Interfaces for VLAN 11 (Staff) and VLAN 30 (Guest).
+4. Create WLANs tied to these interfaces with WPA2-PSK.
+5. LAPs will automatically pull IP via DHCP (Option 43 pointing to WLC IP) and download the SSIDs.
