@@ -161,7 +161,7 @@ vlan 99
 exit
 
 ! --- Uplink Trunk to HQ Router ---
-interface GigabitEthernet0/1
+interface GigabitEthernet1/1/1
  description Trunk to HQ-R1
  switchport trunk encapsulation dot1q
  switchport mode trunk
@@ -338,7 +338,7 @@ vlan 99
 exit
 
 ! --- Uplink Trunk to DN Router ---
-interface GigabitEthernet0/1
+interface GigabitEthernet1/1/1
  description Trunk to DN-R1
  switchport trunk encapsulation dot1q
  switchport mode trunk
@@ -495,7 +495,7 @@ vlan 99
 exit
 
 ! --- Uplink Trunk to HN Router ---
-interface GigabitEthernet0/1
+interface GigabitEthernet1/1/1
  description Trunk to HN-R1
  switchport trunk encapsulation dot1q
  switchport mode trunk
@@ -682,9 +682,9 @@ end
 write memory
 ```
 
-### Switch Access Port Mappings (Run on HQ-SW1, DN-SW1, HN-SW1)
+### Switch Access Port Mappings (Run on Cisco 2960 Access Switches)
 
-Run this identically on all three core/distribution switches to standardize port connections:
+Run this identically on all Access Layer switches (HQ-ACC1-6, DN-ACC1-2, HN-ACC1-2) to standardize endpoint connections:
 
 ```text
 enable
@@ -728,6 +728,44 @@ exit
 end
 write memory
 ```
+
+---
+
+
+### Core Switch Server & WLC Mappings (Run on HQ-SW1, DN-SW1, HN-SW1)
+
+For the Cisco 3650 Core switches, endpoints like DMZ Servers and the WLC connect to the Gigabit ports.
+
+`	ext
+enable
+configure terminal
+
+interface range GigabitEthernet1/0/1 - 4
+ description Trunk to Access Switches
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 99
+ no shutdown
+exit
+
+interface range GigabitEthernet1/0/10 - 15
+ description VLAN 20 (Local / DMZ Servers)
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+exit
+
+interface GigabitEthernet1/0/24
+ description Trunk to WLC (HQ Only)
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 99
+ no shutdown
+exit
+
+end
+write memory
+`
 
 ---
 

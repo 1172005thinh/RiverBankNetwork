@@ -113,9 +113,9 @@ Given the massive number of endpoints, meticulously follow this exact port-mappi
 | ISP Cloud/Router (Gi0/1) | HQ-FW2 (Outside - Gi1/1) | Straight-Through | Redundant ISP Link |
 | HQ-FW1 (Inside - Gi1/2) | HQ-R1 (GigabitEthernet0/0/0) | Straight-Through | Active Firewall to Active Router |
 | HQ-FW2 (Inside - Gi1/2) | HQ-R2 (GigabitEthernet0/0/0) | Straight-Through | Standby Firewall to Standby Router |
-| HQ-R1 (GigabitEthernet0/0/1) | HQ-SW1 (GigabitEthernet0/1) | Straight-Through | Router-on-a-Stick Trunk |
-| HQ-R2 (GigabitEthernet0/0/1) | HQ-SW2 (GigabitEthernet0/1) | Straight-Through | HA Router-on-a-Stick Trunk |
-| HQ-SW1 (GigabitEthernet0/2) | HQ-SW2 (GigabitEthernet0/2) | Cross-Over | Core Inter-Switch Link (ISL) |
+| HQ-R1 (GigabitEthernet0/0/1) | HQ-SW1 (GigabitEthernet1/1/1) | Straight-Through | Router-on-a-Stick Trunk |
+| HQ-R2 (GigabitEthernet0/0/1) | HQ-SW2 (GigabitEthernet1/1/1) | Straight-Through | HA Router-on-a-Stick Trunk |
+| HQ-SW1 (GigabitEthernet1/1/2) | HQ-SW2 (GigabitEthernet1/1/2) | Cross-Over | Core Inter-Switch Link (ISL) |
 
 #### 🌍 WAN (Serial P2P) Cabling
 | Source (device:port) | Destination (device:port) | Cable Type | Notes |
@@ -128,8 +128,8 @@ Given the massive number of endpoints, meticulously follow this exact port-mappi
 | :--- | :--- | :--- | :--- |
 | HQ-SW1 (GigabitEthernet1/0/1 to 1/0/3) | HQ-ACC1 to ACC3 (GigabitEthernet0/1) | Straight-Through | Uplinks (Trunks) |
 | HQ-SW2 (GigabitEthernet1/0/1 to 1/0/3) | HQ-ACC4 to ACC6 (GigabitEthernet0/1) | Straight-Through | Uplinks (Trunks) |
-| HQ-SW1 (GigabitEthernet1/0/4) | HQ-WLC-3504 (GigabitEthernet1) | Straight-Through | WLC Management |
-| HQ-SW1 (FastEthernet0/1 to 0/5) | HQ DMZ Servers (FastEthernet0) | Straight-Through | Server Farm (VLAN 20) |
+| HQ-SW1 (GigabitEthernet1/0/24) | HQ-WLC-3504 (GigabitEthernet1) | Straight-Through | WLC Management |
+| HQ-SW1 (GigabitEthernet1/0/10 to 1/0/15) | HQ DMZ Servers (FastEthernet0) | Straight-Through | Server Farm (VLAN 20) |
 | HQ-ACCx (FastEthernet0/6 to 0/10) | HQ Wired PCs (FastEthernet0) | Straight-Through | Staff Desktops (VLAN 10) |
 | HQ-ACCx (FastEthernet0/11 to 0/15) | HQ-LAPx (FastEthernet0) | Straight-Through | LAPs (VLAN 11/30) |
 | HQ-ACCx (FastEthernet0/21 to 0/24) | HQ IP Cameras (FastEthernet0) | Straight-Through | Surveillance (VLAN 40) |
@@ -137,9 +137,9 @@ Given the massive number of endpoints, meticulously follow this exact port-mappi
 #### 📍 Regional Branches (Da Nang & Ha Noi) Cabling
 | Source (device:port) | Destination (device:port) | Cable Type | Target Network |
 | :--- | :--- | :--- | :--- |
-| Branch-R1 (GigabitEthernet0/0/1) | Branch-SW1 (GigabitEthernet0/1) | Straight-Through | Router-on-a-Stick Trunk |
-| Branch-SW1 (GigabitEthernet0/2) | Branch-ACC1 (GigabitEthernet0/1) | Straight-Through | Uplink to Access 1 |
-| Branch-SW1 (GigabitEthernet0/3) | Branch-ACC2 (GigabitEthernet0/1) | Straight-Through | Uplink to Access 2 |
+| Branch-R1 (GigabitEthernet0/0/1) | Branch-SW1 (GigabitEthernet1/1/1) | Straight-Through | Router-on-a-Stick Trunk |
+| Branch-SW1 (GigabitEthernet1/0/1) | Branch-ACC1 (GigabitEthernet0/1) | Straight-Through | Uplink to Access 1 |
+| Branch-SW1 (GigabitEthernet1/0/2) | Branch-ACC2 (GigabitEthernet0/1) | Straight-Through | Uplink to Access 2 |
 | Branch-ACCx (FastEthernet0/1 to 0/5) | Branch Servers (FastEthernet0) | Straight-Through | Local Servers (VLAN 20) |
 | Branch-ACCx (FastEthernet0/6 to 0/10) | Branch Wired PCs (FastEthernet0) | Straight-Through | Staff Desktops (VLAN 10) |
 | Branch-ACCx (FastEthernet0/11 to 0/15) | Branch APs (FastEthernet0) | Straight-Through | Autonomous APs (VLAN 11) |
