@@ -28,12 +28,14 @@ exit
 interface Serial0/1/0
  description P2P to Da Nang
  ip address 10.255.255.1 255.255.255.252
+ ip ospf message-digest-key 1 md5 RiverBankSecureOSPF
  no shutdown
 exit
 
 interface Serial0/1/1
  description P2P to Ha Noi
  ip address 10.255.255.5 255.255.255.252
+ ip ospf message-digest-key 1 md5 RiverBankSecureOSPF
  no shutdown
 exit
 
@@ -90,6 +92,7 @@ exit
 ! --- Routing Protocol (OSPF Area 0) ---
 router ospf 1
  router-id 1.1.1.1
+ area 0 authentication message-digest
  ! Advertise internal HQ networks
  network 10.0.0.0 0.0.255.255 area 0
  ! Advertise P2P links
@@ -223,6 +226,7 @@ exit
 interface Serial0/1/0
  description P2P to HQ Int Se0/1/0
  ip address 10.255.255.2 255.255.255.252
+ ip ospf message-digest-key 1 md5 RiverBankSecureOSPF
  no shutdown
 exit
 
@@ -272,6 +276,7 @@ exit
 ! --- Routing Protocol (OSPF Area 0) ---
 router ospf 1
  router-id 2.2.2.2
+ area 0 authentication message-digest
  network 10.1.0.0 0.0.255.255 area 0
  network 10.255.255.0 0.0.0.3 area 0
 exit
@@ -378,6 +383,7 @@ exit
 interface Serial0/1/0
  description P2P to HQ Int Se0/1/1
  ip address 10.255.255.6 255.255.255.252
+ ip ospf message-digest-key 1 md5 RiverBankSecureOSPF
  no shutdown
 exit
 
@@ -427,6 +433,7 @@ exit
 ! --- Routing Protocol (OSPF Area 0) ---
 router ospf 1
  router-id 3.3.3.3
+ area 0 authentication message-digest
  network 10.2.0.0 0.0.255.255 area 0
  network 10.255.255.4 0.0.0.3 area 0
 exit
