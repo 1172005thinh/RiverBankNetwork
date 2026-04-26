@@ -69,7 +69,7 @@ Drag and drop the following devices onto your workspace. Group them logically by
     *   2x Cisco 4331 Routers (`HQ-R1`, `HQ-R2`). *Turn off, add `NIM-2T` modules, turn on.*
     *   2x Cisco ASA 5506-X Firewalls (`HQ-FW1`, `HQ-FW2`)
 *   **Core & Distribution Switching:**
-    *   2x Layer 3 Switches - Cisco 3650 (`HQ-SW1`, `HQ-SW2`)
+    *   2x Layer 3 Switches - Cisco 3650 (`HQ-SW1`, `HQ-SW2`). *Turn off, drag the GLC-T modules into the SFP uplink slots, and turn on to enable Gi1/1/x ports.*
 *   **Access Switching:**
     *   6x Layer 2 Switches - Cisco 2960 (`HQ-ACC1` through `HQ-ACC6`)
 *   **Wireless Infrastructure:**
