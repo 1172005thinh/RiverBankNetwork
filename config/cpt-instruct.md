@@ -130,8 +130,8 @@ Given the massive number of endpoints, meticulously follow this exact port-mappi
 | HQ-SW2 (GigabitEthernet1/0/1 to 1/0/3) | HQ-ACC4 to ACC6 (GigabitEthernet0/1) | Straight-Through | Uplinks (Trunks) |
 | HQ-SW1 (GigabitEthernet1/0/24) | HQ-WLC-3504 (GigabitEthernet1) | Straight-Through | WLC Management |
 | HQ-SW1 (GigabitEthernet1/0/10 to 1/0/15) | HQ DMZ Servers (FastEthernet0) | Straight-Through | Server Farm (VLAN 20) |
-| HQ-ACCx (FastEthernet0/6 to 0/10) | HQ Wired PCs (FastEthernet0) | Straight-Through | Staff Desktops (VLAN 10) |
-| HQ-ACCx (FastEthernet0/11 to 0/15) | HQ-LAPx (FastEthernet0) | Straight-Through | LAPs (VLAN 11/30) |
+| HQ-ACCx (FastEthernet0/5 to 0/16) | HQ Wired PCs (FastEthernet0) | Straight-Through | Staff Desktops (VLAN 10) |
+| HQ-ACCx (FastEthernet0/17 to 0/18) | HQ-LAPx (FastEthernet0) | Straight-Through | LAPs (VLAN 11/30) |
 | HQ-ACCx (FastEthernet0/21 to 0/24) | HQ IP Cameras (FastEthernet0) | Straight-Through | Surveillance (VLAN 40) |
 
 #### 📍 Regional Branches (Da Nang & Ha Noi) Cabling
@@ -140,9 +140,9 @@ Given the massive number of endpoints, meticulously follow this exact port-mappi
 | Branch-R1 (GigabitEthernet0/0/1) | Branch-SW1 (GigabitEthernet1/1/1) | Straight-Through | Router-on-a-Stick Trunk |
 | Branch-SW1 (GigabitEthernet1/0/1) | Branch-ACC1 (GigabitEthernet0/1) | Straight-Through | Uplink to Access 1 |
 | Branch-SW1 (GigabitEthernet1/0/2) | Branch-ACC2 (GigabitEthernet0/1) | Straight-Through | Uplink to Access 2 |
-| Branch-ACCx (FastEthernet0/1 to 0/5) | Branch Servers (FastEthernet0) | Straight-Through | Local Servers (VLAN 20) |
-| Branch-ACCx (FastEthernet0/6 to 0/10) | Branch Wired PCs (FastEthernet0) | Straight-Through | Staff Desktops (VLAN 10) |
-| Branch-ACCx (FastEthernet0/11 to 0/15) | Branch APs (FastEthernet0) | Straight-Through | Autonomous APs (VLAN 11) |
+| Branch-ACCx (FastEthernet0/1 to 0/4) | Branch Servers (FastEthernet0) | Straight-Through | Local Servers (VLAN 20) |
+| Branch-ACCx (FastEthernet0/5 to 0/16) | Branch Wired PCs (FastEthernet0) | Straight-Through | Staff Desktops (VLAN 10) |
+| Branch-ACCx (FastEthernet0/17 to 0/20) | Branch APs (FastEthernet0) | Straight-Through | Autonomous APs (VLAN 11) |
 | Branch-ACCx (FastEthernet0/21 to 0/24) | Branch IP Cameras (FastEthernet0) | Straight-Through | Surveillance (VLAN 40) |
 
 ---

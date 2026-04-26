@@ -690,28 +690,28 @@ Run this identically on all Access Layer switches (HQ-ACC1-6, DN-ACC1-2, HN-ACC1
 enable
 configure terminal
 
-interface range FastEthernet0/1 - 5
+interface range FastEthernet0/1 - 4
  description VLAN 20 (Local / DMZ Servers)
  switchport mode access
  switchport access vlan 20
  spanning-tree portfast
 exit
 
-interface range FastEthernet0/6 - 10
+interface range FastEthernet0/5 - 16
  description VLAN 10 (Wired PCs)
  switchport mode access
  switchport access vlan 10
  spanning-tree portfast
 exit
 
-interface range FastEthernet0/11 - 15
+interface range FastEthernet0/17 - 18
  description VLAN 11 (Staff WiFi APs)
  switchport mode access
  switchport access vlan 11
  spanning-tree portfast
 exit
 
-interface range FastEthernet0/16 - 20
+interface range FastEthernet0/19 - 20
  description VLAN 30 (Guest WiFi APs)
  switchport mode access
  switchport access vlan 30
