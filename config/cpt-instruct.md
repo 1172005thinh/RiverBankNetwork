@@ -2,6 +2,61 @@
 
 This document provides a comprehensive walkthrough to build, configure, and verify the RiverBank network topology in Cisco Packet Tracer 9.0.0. This guide strictly implements the `equipment-inventory.md` requirements (with workstation/endpoint counts reduced by 50% as requested for simulation performance).
 
+## 🗺️ Visual Network Topology Diagram
+
+Before building the topology, review this high-level structure to understand how the massive 350+ node scale is logically grouped into Core, Distribution, and Access layers:
+
+```mermaid
+graph TD
+    %% Internet & External
+    ISP((Internet / ISP)) -->|Outside 203.0.113.2| FW1[HQ-FW1 ASA 5506-X]
+    ISP -->|Outside Backup| FW2[HQ-FW2 ASA 5506-X]
+
+    %% HQ Firewalls to Routers
+    FW1 -->|Inside 192.168.1.1| HQR1{HQ-R1 Router}
+    FW2 -->|Inside| HQR2{HQ-R2 Router}
+    
+    %% HQ Core Routing to Core Switching
+    HQR1 -->|HSRP 10.0.x.1| HQCORE1[HQ-CORE1 L3 Switch]
+    HQR2 -->|HSRP 10.0.x.1| HQCORE2[HQ-CORE2 L3 Switch]
+    HQCORE1 <-->|Trunk| HQCORE2
+
+    %% HQ Core to Access Layer
+    HQCORE1 -->|Trunks| HQACC[HQ-ACC1 to ACC6\n6x 2960 Switches]
+    HQCORE2 -->|Trunks| HQACC
+
+    %% HQ Endpoints & DMZ
+    HQCORE1 -.->|VLAN 20| HQDMZ[HQ DMZ & IT\n6x Servers, 2x NVRs]
+    HQCORE1 -.->|Trunk| HQWLC[HQ-WLC-3504]
+    
+    HQACC -.->|VLAN 10| HQPC[72x Wired PCs]
+    HQACC -.->|VLAN 11/30| HQLAP[14x Lightweight APs\n108 Staff, 108 Guest]
+    HQACC -.->|VLAN 40| HQCCTV[21x IP Cameras]
+
+    %% WAN Links (OSPF Area 0)
+    HQR1 <-->|Se0/1/0 P2P\n10.255.255.0/30| DNR1{DN-R1 Router}
+    HQR1 <-->|Se0/1/1 P2P\n10.255.255.4/30| HNR1{HN-R1 Router}
+
+    %% Da Nang Branch
+    DNR1 --> DNCORE[DN-CORE1 L3 Switch]
+    DNCORE --> DNACC[DN-ACC1 & ACC2]
+    DNACC -.-> DNSRV[4x Servers, 1x NVR]
+    DNACC -.-> DNPC[18x PCs, 6x Cameras]
+    DNACC -.-> DNAP[4x Autonomous APs\n27 Staff, 27 Guest]
+
+    %% Ha Noi Branch
+    HNR1 --> HNCORE[HN-CORE1 L3 Switch]
+    HNCORE --> HNACC[HN-ACC1 & HN-ACC2]
+    HNACC -.-> HNSRV[4x Servers, 1x NVR]
+    HNACC -.-> HNPC[18x PCs, 6x Cameras]
+    HNACC -.-> HNAP[4x Autonomous APs\n27 Staff, 27 Guest]
+    
+    classDef hq fill:#cce5ff,stroke:#004085,stroke-width:2px;
+    classDef branch fill:#d4edda,stroke:#155724,stroke-width:2px;
+    class HQR1,HQR2,FW1,FW2,HQCORE1,HQCORE2,HQACC,HQDMZ,HQWLC hq;
+    class DNR1,DNCORE,DNACC,HNR1,HNCORE,HNACC branch;
+```
+
 ## Phase 1: Physical Enterprise Topology Deployment
 
 ### 1. Hardware Deployment List
