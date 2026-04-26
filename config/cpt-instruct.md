@@ -17,17 +17,17 @@ graph TD
     FW2 -->|Inside| HQR2{HQ-R2 Router}
     
     %% HQ Core Routing to Core Switching
-    HQR1 -->|HSRP 10.0.x.1| HQCORE1[HQ-CORE1 L3 Switch]
-    HQR2 -->|HSRP 10.0.x.1| HQCORE2[HQ-CORE2 L3 Switch]
-    HQCORE1 <-->|Trunk| HQCORE2
+    HQR1 -->|HSRP 10.0.x.1| HQSW1[HQ-SW1 L3 Switch]
+    HQR2 -->|HSRP 10.0.x.1| HQSW2[HQ-SW2 L3 Switch]
+    HQSW1 <-->|Trunk| HQSW2
 
     %% HQ Core to Access Layer
-    HQCORE1 -->|Trunks| HQACC[HQ-ACC1 to ACC6\n6x 2960 Switches]
-    HQCORE2 -->|Trunks| HQACC
+    HQSW1 -->|Trunks| HQACC[HQ-ACC1 to ACC6\n6x 2960 Switches]
+    HQSW2 -->|Trunks| HQACC
 
     %% HQ Endpoints & DMZ
-    HQCORE1 -.->|VLAN 20| HQDMZ[HQ DMZ & IT\n6x Servers, 2x NVRs]
-    HQCORE1 -.->|Trunk| HQWLC[HQ-WLC-3504]
+    HQSW1 -.->|VLAN 20| HQDMZ[HQ DMZ & IT\n6x Servers, 2x NVRs]
+    HQSW1 -.->|Trunk| HQWLC[HQ-WLC-3504]
     
     HQACC -.->|VLAN 10| HQPC[72x Wired PCs]
     HQACC -.->|VLAN 11/30| HQLAP[14x Lightweight APs\n108 Staff, 108 Guest]
@@ -38,23 +38,23 @@ graph TD
     HQR1 <-->|Se0/1/1 P2P\n10.255.255.4/30| HNR1{HN-R1 Router}
 
     %% Da Nang Branch
-    DNR1 --> DNCORE[DN-CORE1 L3 Switch]
-    DNCORE --> DNACC[DN-ACC1 & ACC2]
+    DNR1 --> DNSW1[DN-SW1 L3 Switch]
+    DNSW1 --> DNACC[DN-ACC1 & ACC2]
     DNACC -.-> DNSRV[4x Servers, 1x NVR]
     DNACC -.-> DNPC[18x PCs, 6x Cameras]
     DNACC -.-> DNAP[4x Autonomous APs\n27 Staff, 27 Guest]
 
     %% Ha Noi Branch
-    HNR1 --> HNCORE[HN-CORE1 L3 Switch]
-    HNCORE --> HNACC[HN-ACC1 & HN-ACC2]
+    HNR1 --> HNSW1[HN-SW1 L3 Switch]
+    HNSW1 --> HNACC[HN-ACC1 & HN-ACC2]
     HNACC -.-> HNSRV[4x Servers, 1x NVR]
     HNACC -.-> HNPC[18x PCs, 6x Cameras]
     HNACC -.-> HNAP[4x Autonomous APs\n27 Staff, 27 Guest]
     
     classDef hq fill:#004085,stroke:#001A33,stroke-width:2px,color:#ffffff;
     classDef branch fill:#155724,stroke:#0B2E13,stroke-width:2px,color:#ffffff;
-    class HQR1,HQR2,FW1,FW2,HQCORE1,HQCORE2,HQACC,HQDMZ,HQWLC hq;
-    class DNR1,DNCORE,DNACC,HNR1,HNCORE,HNACC branch;
+    class HQR1,HQR2,FW1,FW2,HQSW1,HQSW2,HQACC,HQDMZ,HQWLC hq;
+    class DNR1,DNSW1,DNACC,HNR1,HNSW1,HNACC branch;
 ```
 
 ## Phase 1: Physical Enterprise Topology Deployment
@@ -69,7 +69,7 @@ Drag and drop the following devices onto your workspace. Group them logically by
     *   2x Cisco 4331 Routers (`HQ-R1`, `HQ-R2`). *Turn off, add `NIM-2T` modules, turn on.*
     *   2x Cisco ASA 5506-X Firewalls (`HQ-FW1`, `HQ-FW2`)
 *   **Core & Distribution Switching:**
-    *   2x Layer 3 Switches - Cisco 3650 (`HQ-CORE1`, `HQ-CORE2`)
+    *   2x Layer 3 Switches - Cisco 3650 (`HQ-SW1`, `HQ-SW2`)
 *   **Access Switching:**
     *   6x Layer 2 Switches - Cisco 2960 (`HQ-ACC1` through `HQ-ACC6`)
 *   **Wireless Infrastructure:**
@@ -89,7 +89,7 @@ Drag and drop the following devices onto your workspace. Group them logically by
 *   **Edge & Security:**
     *   1x Cisco 4331 Router (`DN-R1` / `HN-R1`). *Turn off, add `NIM-2T`, turn on.*
 *   **Core & Access Switching:**
-    *   1x Layer 3 Switch - Cisco 3650 (`DN-CORE1` / `HN-CORE1`)
+    *   1x Layer 3 Switch - Cisco 3650 (`DN-SW1` / `HN-SW1`)
     *   2x Layer 2 Switches - Cisco 2960 (`DN-ACC1` to `DN-ACC2` / `HN-ACC1` to `HN-ACC2`)
 *   **Wireless Infrastructure:**
     *   4x AccessPoint-PT (`DN-AP1` to `DN-AP4` / `HN-AP1` to `HN-AP4`)
@@ -110,10 +110,10 @@ Given the massive number of endpoints, use the following structured layout:
 
 *   **Internet:** ISP Router <--> `HQ-FW1` and `HQ-FW2` (Outside interfaces).
 *   **Firewalls to Routers:** `HQ-FW1/FW2` (Inside interfaces) <--> `HQ-R1` and `HQ-R2`.
-*   **HA Routers to Core:** `HQ-R1` <--> `HQ-CORE1` and `HQ-R2` <--> `HQ-CORE2`.
-*   **Core to Access:** Connect `HQ-CORE1` and `HQ-CORE2` using cross-over or fiber. Trunk from both Cores down to `HQ-ACC1` through `HQ-ACC6`.
-*   **WLC:** Connect `HQ-WLC` to `HQ-CORE1` on a trunk port.
-*   **DMZ Servers:** Connect all 6 Servers to `HQ-CORE1` or a dedicated DMZ Access switch assigned to VLAN 20.
+*   **HA Routers to Core:** `HQ-R1` <--> `HQ-SW1` and `HQ-R2` <--> `HQ-SW2`.
+*   **Core to Access:** Connect `HQ-SW1` and `HQ-SW2` using cross-over or fiber. Trunk from both Cores down to `HQ-ACC1` through `HQ-ACC6`.
+*   **WLC:** Connect `HQ-WLC` to `HQ-SW1` on a trunk port.
+*   **DMZ Servers:** Connect all 6 Servers to `HQ-SW1` or a dedicated DMZ Access switch assigned to VLAN 20.
 *   **Endpoints:** Distribute the 72 PCs, 21 IP Cameras, and 14 LAPs evenly across the 6 Access Switches (`HQ-ACC1` through `HQ-ACC6`). Configure switch ports to VLAN 10 (PCs), VLAN 40 (Cameras), and VLAN 11/30 (LAPs trunk/access).
 
 **Branches (Da Nang & Ha Noi) Connectivity:**
@@ -133,7 +133,7 @@ Given the massive number of endpoints, use the following structured layout:
 
 1.  **Firewalls (`HQ-FW1`, `HQ-FW2`):** Configure the Active/Standby ASA block. Set outside IP to `203.0.113.2` and inside to `192.168.1.1` (See Section 10.2).
 2.  **Routers (`HQ-R1`, `HQ-R2`):** Apply the base WAN, OSPF, NAT, DHCP, and ACL configurations (See Section 1). Then apply the **HSRP** configuration (See Section 10.1) to ensure `.1` is the virtual gateway while `.2` and `.3` act as physical interface IPs.
-3.  **Switches (`HQ-CORE1/2`, `HQ-ACC1-6`):**
+3.  **Switches (`HQ-SW1/2`, `HQ-ACC1-6`):**
     *   Create VLANs 10, 11, 20, 30, 40, 99 on all switches.
     *   Configure Gigabit uplinks as `mode trunk`.
     *   Assign FastEthernet ports to respective Access VLANs based on the endpoint plugged into it (See Section 8 and 10.3).
@@ -141,7 +141,7 @@ Given the massive number of endpoints, use the following structured layout:
 ### 2. Branch Setups
 
 1.  **Routers (`DN-R1`, `HN-R1`):** Apply standard Branch router config (OSPF Area 0, DHCP Pools, NAT Overload, WAN IPs) from Sections 4 and 6.
-2.  **Switches (`DN-CORE`, `DN-ACC1-2`):** Create VLANs and configure trunks and access ports appropriately.
+2.  **Switches (`DN-SW1`, `DN-ACC1-2`):** Create VLANs and configure trunks and access ports appropriately.
 
 ---
 
