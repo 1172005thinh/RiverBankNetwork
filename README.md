@@ -97,6 +97,7 @@ RiverBank requires a highly secure, available, and scalable network infrastructu
 ### 2. RiverBank Equipment & Device Inventory
 
 **🏢 Headquarters (HQ) - Ho Chi Minh City**
+
 *   **Edge & Security:** 2x Cisco ISR 4000 Routers (HA), 2x Cisco ASA/Firepower Perimeters.
 *   **Switching:** 2x Layer 3 Core Switches (Catalyst 3850/9500), ~6x 48-port PoE+ Access Switches (Catalyst 9200L).
 *   **Wireless:** 1x WLC, ~14x Cisco Access Points.
@@ -105,6 +106,7 @@ RiverBank requires a highly secure, available, and scalable network infrastructu
 *   **Surveillance:** 2x 32-channel NVRs, ~42 PoE IP Cameras.
 
 **📍 Regional Branches (Da Nang & Ha Noi - quantities per branch)**
+
 *   **Edge & Security:** 1x Cisco ISR Router w/ Security payload.
 *   **Switching:** 1x Layer 3 Core Switch, ~2x 48-port PoE+ Access Switches.
 *   **Wireless:** ~4x Cisco Access Points.
@@ -157,7 +159,7 @@ graph TD
 To certify the deployment works per specification, simulate the following scenarios in Packet Tracer:
 
 1. **Verify DHCP Allocation:** Connect laptops/PCs to switch access ports (e.g. `FastEthernet0/6` for VLAN 10) or Wireless APs. Verify that IP Configuration -> DHCP automatically provides an IP (e.g., `10.1.10.11`) and populates the Default Gateway.
-2. **Verify Inter-VLAN & OSPF Routing:** 
+2. **Verify Inter-VLAN & OSPF Routing:**
    - Open Command Prompt on an HQ PC (VLAN 10) and `ping` a Da Nang PC (`10.1.10.11`).
    - Run `tracert 10.1.10.11` to ensure traffic successfully jumps from HQ-R1 to DN-R1 over the Serial Point-to-Point links.
 3. **Verify Security (ACL Boundaries):**
@@ -165,8 +167,8 @@ To certify the deployment works per specification, simulate the following scenar
    - Attempt to `ping` a Staff PC (`10.0.10.11`) or a DMZ Server (`10.0.20.5`). Packet Tracer should respond with **"Destination host unreachable"** — confirming isolation.
    - Attempt to ping the `8.8.8.8` (Simulated internet). It should succeed.
 4. **Verify DMZ Containment:**
-   - From the DMZ Web Server (`10.0.20.5`), attempt to `ping` the Internal HQ PC (`10.0.10.11`). It should **fail** (blocked by `HQ_DMZ_CONTAINMENT`). 
+   - From the DMZ Web Server (`10.0.20.5`), attempt to `ping` the Internal HQ PC (`10.0.10.11`). It should **fail** (blocked by `HQ_DMZ_CONTAINMENT`).
    - Ensure the server can still successfully reply to incoming web HTTP requests via the browser.
-5. **Verify PAT / Port Forwarding (Internet):** 
-   - Add a PC outside of HQ-R1 representing an internet consumer. 
+5. **Verify PAT / Port Forwarding (Internet):**
+   - Add a PC outside of HQ-R1 representing an internet consumer.
    - Open its Web Browser and go to `203.0.113.2`. HQ-R1's NAT rule should forward port 80 requests directly to `10.0.20.5` inside the HQ Server Farm, loading the secure web portal.
