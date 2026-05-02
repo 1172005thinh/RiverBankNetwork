@@ -102,7 +102,7 @@ router ospf 1
  default-information originate
 exit
 
-ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0/0
+ip route 0.0.0.0 0.0.0.0 203.0.113.1
 
 ! --- Access Control Lists (ACLs) ---
 ! Guest WiFi Block
@@ -163,7 +163,6 @@ exit
 ! --- Uplink Trunk to HQ Router ---
 interface GigabitEthernet1/1/1
  description Trunk to HQ-R1
- switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk native vlan 99
  no shutdown
@@ -340,7 +339,6 @@ exit
 ! --- Uplink Trunk to DN Router ---
 interface GigabitEthernet1/1/1
  description Trunk to DN-R1
- switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk native vlan 99
  no shutdown
@@ -497,7 +495,6 @@ exit
 ! --- Uplink Trunk to HN Router ---
 interface GigabitEthernet1/1/1
  description Trunk to HN-R1
- switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk native vlan 99
  no shutdown
@@ -742,7 +739,6 @@ configure terminal
 
 interface range GigabitEthernet1/0/1 - 4
  description Trunk to Access Switches
- switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk native vlan 99
  no shutdown
@@ -757,7 +753,6 @@ exit
 
 interface GigabitEthernet1/0/24
  description Trunk to WLC (HQ Only)
- switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk native vlan 99
  no shutdown
@@ -826,31 +821,200 @@ To fully comply with the `equipment-inventory.md` requirements, the following ad
 
 To provide gateway redundancy, add a second Cisco 4331 Router (`HQ-R2`). Both HQ-R1 and HQ-R2 will share the `10.0.X.1` default gateway IP using HSRP.
 
-*(Note: In a true HA setup, HQ-R1 physical IPs change to `.2`, HQ-R2 uses `.3`, and the HSRP virtual IP is `.1`. Apply this concept across all sub-interfaces.)*
+*(Note: In a true HA setup, HQ-R1 physical IPs must be changed to `.2`, HQ-R2 uses `.3`, and the HSRP virtual IP is `.1`. You must update HQ-R1's sub-interfaces to match this concept before applying HQ-R2.)*
 
 ```text
 enable
 configure terminal
 hostname HQ-R2
 
-! --- Sub-Interfaces with HSRP (Example for VLAN 10 & 20) ---
+! --- Basic Security ---
+enable secret class
+service password-encryption
+line console 0
+ password cisco
+ login
+exit
+line vty 0 4
+ password cisco
+ login
+ transport input ssh
+exit
+
+! --- Internet Connection (Backup ISP Link) ---
+interface GigabitEthernet0/0/0
+ description Uplink to ISP (Backup)
+ ip address 203.0.113.6 255.255.255.252
+ ip nat outside
+ no shutdown
+exit
+
+! --- Internal LAN Trunk to HQ-SW2 ---
+interface GigabitEthernet0/0/1
+ description Trunk to HQ-SW2
+ no ip address
+ no shutdown
+exit
+
+! --- Sub-Interfaces with HSRP ---
 interface GigabitEthernet0/0/1.10
+ description VLAN 10 (HQ Wired PCs)
  encapsulation dot1Q 10
  ip address 10.0.10.3 255.255.255.0
+ ip nat inside
  standby 10 ip 10.0.10.1
  standby 10 priority 90
  standby 10 preempt
 exit
 
+interface GigabitEthernet0/0/1.11
+ description VLAN 11 (HQ Staff WiFi)
+ encapsulation dot1Q 11
+ ip address 10.0.11.3 255.255.255.0
+ ip nat inside
+ standby 11 ip 10.0.11.1
+ standby 11 priority 90
+ standby 11 preempt
+exit
+
 interface GigabitEthernet0/0/1.20
+ description VLAN 20 (DMZ / Server Farm)
  encapsulation dot1Q 20
  ip address 10.0.20.3 255.255.255.0
+ ip nat inside
+ ip access-group HQ_DMZ_CONTAINMENT in
  standby 20 ip 10.0.20.1
  standby 20 priority 90
  standby 20 preempt
 exit
 
-! ... (Repeat HSRP for all other VLANs) ...
+interface GigabitEthernet0/0/1.30
+ description VLAN 30 (HQ Guest WiFi)
+ encapsulation dot1Q 30
+ ip address 10.0.30.3 255.255.255.0
+ ip nat inside
+ ip access-group HQ_GUEST_WIFI_ACL in
+ standby 30 ip 10.0.30.1
+ standby 30 priority 90
+ standby 30 preempt
+exit
+
+interface GigabitEthernet0/0/1.40
+ description VLAN 40 (HQ Surveillance)
+ encapsulation dot1Q 40
+ ip address 10.0.40.3 255.255.255.0
+ ip nat inside
+ standby 40 ip 10.0.40.1
+ standby 40 priority 90
+ standby 40 preempt
+exit
+
+interface GigabitEthernet0/0/1.99
+ description VLAN 99 (IT Management)
+ encapsulation dot1Q 99 native
+ ip address 10.0.99.3 255.255.255.0
+ ip nat inside
+ standby 99 ip 10.0.99.1
+ standby 99 priority 90
+ standby 99 preempt
+exit
+
+! --- Routing Protocol (OSPF Area 0) ---
+router ospf 1
+ router-id 4.4.4.4
+ network 10.0.0.0 0.0.255.255 area 0
+ default-information originate
+exit
+
+ip route 0.0.0.0 0.0.0.0 203.0.113.5
+
+! --- Access Control Lists (ACLs) ---
+! Guest WiFi Block
+ip access-list extended HQ_GUEST_WIFI_ACL
+ remark Prevent HQ Guest WiFi from accessing Internal LANs & DMZ
+ deny ip 10.0.30.0 0.0.0.255 10.0.0.0 0.255.255.255
+ remark Allow HQ Guest WiFi to Internet
+ permit ip 10.0.30.0 0.0.0.255 any
+exit
+
+! DMZ Containment Block
+ip access-list extended HQ_DMZ_CONTAINMENT
+ remark Prevent DMZ Servers from initiating to Internal LANs
+ deny ip 10.0.20.0 0.0.0.255 10.0.10.0 0.0.0.255
+ deny ip 10.0.20.0 0.0.0.255 10.0.11.0 0.0.0.255
+ remark Allow DMZ Servers to reply/route to Internet
+ permit ip 10.0.20.0 0.0.0.255 any
+ permit ip any any
+exit
+
+! --- NAT Configuration ---
+access-list 1 permit 10.0.0.0 0.255.255.255
+access-list 1 permit 10.1.0.0 0.255.255.255
+access-list 1 permit 10.2.0.0 0.255.255.255
+
+ip nat inside source list 1 interface GigabitEthernet0/0/0 overload
+! Static NAT for DMZ Web Server via Backup ISP Link
+ip nat inside source static tcp 10.0.20.5 80 203.0.113.6 80
+ip nat inside source static tcp 10.0.20.5 443 203.0.113.6 443
+
+end
+write memory
+```
+
+### 10.2 High Availability HQ Switch (HQ-SW2)
+
+The `HQ-SW2` acts as a redundant core switch providing a trunk to `HQ-R2`, a cross-over inter-switch link to `HQ-SW1`, and trunks down to the access layer switches.
+
+```text
+enable
+configure terminal
+hostname HQ-SW2
+
+! --- Create VLANs ---
+vlan 10
+ name HQ_Wired_PCs
+vlan 11
+ name HQ_Staff_WiFi
+vlan 20
+ name DMZ_Server_Farm
+vlan 30
+ name HQ_Guest_WiFi
+vlan 40
+ name HQ_Surveillance
+vlan 99
+ name IT_Management
+exit
+
+! --- Uplink Trunk to HQ Router (HQ-R2) ---
+interface GigabitEthernet1/1/1
+ description Trunk to HQ-R2
+ switchport mode trunk
+ switchport trunk native vlan 99
+ no shutdown
+exit
+
+! --- Inter-Switch Trunk to HQ-SW1 ---
+interface GigabitEthernet1/1/2
+ description Trunk to HQ-SW1
+ switchport mode trunk
+ switchport trunk native vlan 99
+ no shutdown
+exit
+
+! --- Trunks to Access Switches ---
+interface range GigabitEthernet1/0/1 - 4
+ description Trunk to Access Switches
+ switchport mode trunk
+ switchport trunk native vlan 99
+ no shutdown
+exit
+
+! --- Management Interface ---
+interface vlan 99
+ ip address 10.0.99.3 255.255.255.0
+ no shutdown
+exit
+ip default-gateway 10.0.99.1
 
 end
 write memory
